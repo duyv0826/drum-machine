@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>网页定制接单 · 明码标价 · duyv0826</title>
+<meta name="description" content="个人主页、落地页、网页小工具、Bug 修复定制开发。明码标价,源码全交付,小单 48 小时内交付,不满意不收尾款。">
+<meta name="theme-color" content="#0b0e14">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0e14'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%235df0a8' stroke-width='3'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="网页定制接单 · 明码标价">
+<meta property="og:description" content="个人主页、落地页、网页小工具、Bug 修复。源码全交付，小单 48 小时内交付，验收满意再付尾款。">
+<meta property="og:url" content="https://duyv0826.github.io/drum-machine/hire.html">
+<meta property="og:image" content="https://duyv0826.github.io/drum-machine/docs/screenshot.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #121724;
+    --line: #232b3f;
+    --text: #e8ecf4;
+    --dim: #8b93a7;
+    --accent: #6c8cff;
+    --green: #5df0a8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 800px at 50% -10%, #1b2438 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    line-height: 1.65;
+    padding: 36px 16px 56px;
+  }
+  .wrap { width: 860px; max-width: 100%; margin: 0 auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .card {
+    background: linear-gradient(180deg, #151b2c 0%, var(--panel) 100%);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px 28px;
+    margin-bottom: 18px;
+    box-shadow: 0 24px 60px -24px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.02) inset;
+  }
+
+  /* ---------- header ---------- */
+  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(145deg, #2a3554, #171e31);
+    border: 1px solid #33406a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--green);
+    box-shadow: 0 0 18px -4px rgba(93,240,168,.55);
+  }
+  .brand h1 { font-size: 18px; letter-spacing: 1px; font-weight: 700; }
+  .brand p  { font-size: 12px; color: var(--dim); margin-top: 2px; letter-spacing: 1px; }
+  .badge {
+    font-size: 11px; color: var(--green); border: 1px solid rgba(93,240,168,.35);
+    padding: 4px 10px; border-radius: 999px; letter-spacing: 1px;
+    background: rgba(93,240,168,.06); white-space: nowrap;
+  }
+  .badge i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 6px; box-shadow: 0 0 6px var(--green); }
+
+  /* ---------- hero ---------- */
+  .hero h2 { font-size: 30px; line-height: 1.3; margin-bottom: 10px; }
+  .hero h2 em { font-style: normal; color: var(--green); }
+  .hero p { color: var(--dim); font-size: 15px; margin-bottom: 16px; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip {
+    font-size: 12px; color: var(--text);
+    background: #1a2135; border: 1px solid #2c3752; border-radius: 999px;
+    padding: 5px 14px;
+  }
+  .chip b { color: var(--green); font-weight: 600; margin-right: 4px; }
+
+  .sec-title {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 16px; font-size: 17px; font-weight: 700; letter-spacing: 1px;
+  }
+  .sec-title small { font-size: 11px; color: #3d475f; letter-spacing: 3px; font-family: Consolas, monospace; }
+
+  /* ---------- 案例卡 ---------- */
+  .shot {
+    display: block; width: 100%; border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .case-meta { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  .case-meta h3 { font-size: 15px; }
+  .case-meta p { font-size: 13px; color: var(--dim); margin-top: 2px; }
+  .case-links { display: flex; gap: 10px; flex-shrink: 0; }
+  .btn {
+    font-size: 13px; padding: 7px 16px; border-radius: 999px;
+    border: 1px solid #2c3752; background: #1a2135; color: var(--text);
+    cursor: pointer; transition: all .12s;
+  }
+  .btn:hover { border-color: var(--accent); color: #aab8ff; text-decoration: none; }
+  .btn.primary { background: rgba(93,240,168,.1); border-color: rgba(93,240,168,.4); color: var(--green); }
+  .btn.primary:hover { box-shadow: 0 0 16px -6px rgba(93,240,168,.8); }
+
+  /* ---------- 价目表 ---------- */
+  .price-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 15px 2px; border-bottom: 1px dashed #232b3f;
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-row .ico {
+    flex: 0 0 42px; height: 42px; border-radius: 10px;
+    background: #101627; border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-size: 19px;
+  }
+  .price-row .info { flex: 1; min-width: 0; }
+  .price-row .info b { font-size: 14px; font-weight: 600; }
+  .price-row .info > span { display: block; font-size: 12px; color: var(--dim); }
+  .price-row .tag { font-size: 11px; color: var(--accent); border: 1px solid rgba(108,140,255,.35); border-radius: 999px; padding: 1px 9px; margin-left: 8px; vertical-align: 2px; }
+  .price-row .fee { text-align: right; flex-shrink: 0; }
+  .price-row .fee b {
+    font-family: Consolas, "Courier New", monospace; font-size: 17px;
+    color: var(--green); text-shadow: 0 0 8px rgba(93,240,168,.5);
+  }
+  .price-row .fee span { display: block; font-size: 11px; color: var(--dim); }
+
+  /* ---------- 流程 ---------- */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .step {
+    background: #101627; border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 14px 12px;
+  }
+  .step i {
+    font-style: normal; font-family: Consolas, monospace; font-size: 12px;
+    color: var(--green); letter-spacing: 1px;
+  }
+  .step b { display: block; font-size: 13px; margin: 4px 0 2px; }
+  .step span { font-size: 12px; color: var(--dim); }
+
+  /* ---------- FAQ ---------- */
+  details { border-bottom: 1px dashed #232b3f; }
+  details:last-of-type { border-bottom: none; }
+  summary {
+    cursor: pointer; padding: 12px 2px; font-size: 14px; font-weight: 600;
+    list-style: none; display: flex; align-items: center; gap: 10px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "+"; font-family: Consolas, monospace; color: var(--green); font-size: 16px; }
+  details[open] summary::before { content: "−"; }
+  details p { font-size: 13px; color: var(--dim); padding: 0 2px 14px 24px; }
+
+  /* ---------- 联系 ---------- */
+  .contact { border-color: rgba(93,240,168,.4); box-shadow: 0 24px 60px -24px rgba(0,0,0,.8), 0 0 26px -10px rgba(93,240,168,.35); }
+  .contact-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: #0d1220; border: 1px solid var(--line); border-radius: 12px;
+    padding: 13px 16px; margin-top: 10px;
+  }
+  .contact-row .k { font-size: 12px; color: var(--dim); letter-spacing: 2px; margin-right: 12px; }
+  .contact-row .val { font-family: Consolas, "Courier New", monospace; font-size: 15px; color: var(--green); }
+  .copy-btn {
+    font-size: 12px; padding: 5px 14px; border-radius: 999px; cursor: pointer;
+    background: #1a2135; border: 1px solid #2c3752; color: var(--text); transition: all .12s;
+  }
+  .copy-btn:hover { border-color: var(--green); color: var(--green); }
+  .contact-note { font-size: 12px; color: var(--dim); margin-top: 14px; }
+  .contact-note b { color: var(--text); }
+
+  footer { text-align: center; font-size: 12px; color: #3d475f; padding-top: 8px; }
+  footer a { color: var(--dim); }
+
+  @media (max-width: 640px) {
+    .card { padding: 20px 18px; }
+    .hero h2 { font-size: 24px; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .price-row .fee b { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5df0a8" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></div>
+      <div>
+        <h1>duyv0826 · 网页定制</h1>
+        <p>CUSTOM WEB WORKS · AI 加速交付</p>
+      </div>
+    </div>
+    <span class="badge"><i></i>接单中</span>
+  </header>
+
+  <section class="card hero">
+    <h2>小网页,直接下单。<br>明码标价,<em>不满意不收尾款</em>。</h2>
+    <p>个人主页、活动落地页、网页小工具、Bug 修复。AI 辅助开发,小单当天到 48 小时交付,全部源码交付,部署上线一步到位。</p>
+    <div class="chips">
+      <span class="chip"><b>✓</b>源码全交付</span>
+      <span class="chip"><b>✓</b>零依赖易部署</span>
+      <span class="chip"><b>✓</b>已有上线作品</span>
+      <span class="chip"><b>✓</b>验收满意再付尾款</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sec-title">已上线作品 <small>SHIPPED</small></div>
+    <a href="index.html" title="在线试玩 DRUM-909">
+      <img class="shot" src="docs/screenshot.png" alt="DRUM-909 网页鼓机界面截图" width="1280" height="720" decoding="async">
+    </a>
+    <div class="case-meta">
+      <div>
+        <h3>DRUM-909 · 网页鼓机音序器</h3>
+        <p>纯 Web Audio 实时合成 · 单文件零依赖 · 6 轨 × 16 步 · 打开即玩</p>
+      </div>
+      <div class="case-links">
+        <a class="btn primary" href="index.html">在线试玩</a>
+        <a class="btn" href="https://github.com/duyv0826/drum-machine" target="_blank" rel="noopener">源码</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sec-title">服务与报价 <small>PRICE LIST</small></div>
+    <div class="price-row">
+      <div class="ico">🛠</div>
+      <div class="info"><b>网页小工具</b><span>计算器、转换器、生成器、小游戏、效率小玩意</span></div>
+      <div class="fee"><b>¥99 起</b><span>1–2 天</span></div>
+    </div>
+    <div class="price-row">
+      <div class="ico">🚀</div>
+      <div class="info"><b>活动页 · 落地页</b><span>产品介绍、报名页、邀请函 H5、节日祝福页</span></div>
+      <div class="fee"><b>¥150 起</b><span>1–2 天</span></div>
+    </div>
+    <div class="price-row">
+      <div class="ico">📄</div>
+      <div class="info"><b>个人主页 · 作品集</b><span>展示自己、作品或简历的单页网站,含部署上线</span></div>
+      <div class="fee"><b>¥199 起</b><span>1–3 天</span></div>
+    </div>
+    <div class="price-row">
+      <div class="ico">🔧</div>
+      <div class="info"><b>改 Bug · 样式调整</b><span>现有网页修问题、改外观、加小功能</span></div>
+      <div class="fee"><b>¥50 起</b><span>当天–1 天</span></div>
+    </div>
+    <div class="price-row">
+      <div class="ico">✨</div>
+      <div class="info"><b>复杂需求 <span class="tag">先聊</span></b><span>数据可视化、小程序原型、交互演示 Demo</span></div>
+      <div class="fee"><b>面议</b><span>评估后定价</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sec-title">交付流程 <small>PROCESS</small></div>
+    <div class="steps">
+      <div class="step"><i>01</i><b>说需求</b><span>一句描述或参考截图,越具体越好</span></div>
+      <div class="step"><i>02</i><b>我报价</b><span>2 小时内回复价格和交付时间</span></div>
+      <div class="step"><i>03</i><b>开发</b><span>中途发预览链接,随时提修改</span></div>
+      <div class="step"><i>04</i><b>验收</b><span>满意付尾款,拿全部源码</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sec-title">常见问题 <small>FAQ</small></div>
+    <details open>
+      <summary>怎么算价格?</summary>
+      <p>按需求复杂度。把想做的事发给我(截图、参考链接最直观),我 2 小时内回复具体报价,确认后再开工。</p>
+    </details>
+    <details>
+      <summary>怎么付款?有保障吗?</summary>
+      <p>小单验收后一次付清,大单 50% 定金。验收满意再付尾款,不满意不收尾款。微信 / 支付宝均可。</p>
+    </details>
+    <details>
+      <summary>交付后能改吗?</summary>
+      <p>交付后 7 天内,文字、配色、排版类小调整免费改 3 次;新增功能按工时另算,提前报价。</p>
+    </details>
+    <details>
+      <summary>交付什么?会帮忙上线吗?</summary>
+      <p>交付全部源码 + 使用说明,并帮你免费部署上线(静态网站用 GitHub Pages,不花服务器钱),手机电脑都能打开。</p>
+    </details>
+    <details>
+      <summary>后端、数据库、小程序能做吗?</summary>
+      <p>以纯前端为主;轻量后端(表单收集、数据展示)可以谈。复杂管理系统、App 不接,免得耽误你。</p>
+    </details>
+  </section>
+
+  <section class="card contact">
+    <div class="sec-title">联系我 <small>CONTACT</small></div>
+    <!-- ═══════════ 联系方式:把下面两处"待填写"换成真实信息 ═══════════ -->
+    <div class="contact-row">
+      <div><span class="k">微信</span><span class="val" id="wechatVal">待填写(微信号)</span></div>
+      <button class="copy-btn" data-copy="#wechatVal" type="button">复制</button>
+    </div>
+    <div class="contact-row">
+      <div><span class="k">邮箱</span><span class="val" id="mailVal">待填写(邮箱)</span></div>
+      <button class="copy-btn" data-copy="#mailVal" type="button">复制</button>
+    </div>
+    <p class="contact-note">加好友请备注 <b>「做网页」</b>,发我三样:<b>① 想做什么</b>(参考截图/链接最好)<b>② 预算</b> <b>③ 什么时候要</b>。我会尽快回复报价。</p>
+  </section>
+
+  <footer>
+    © 2026 duyv0826 · 由 GitHub Pages 托管 · <a href="index.html">🥁 试试我的网页鼓机</a>
+  </footer>
+
+</div>
+
+<script>
+'use strict';
+document.querySelectorAll('[data-copy]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const el = document.querySelector(btn.dataset.copy);
+    if (!el) return;
+    try {
+      await navigator.clipboard.writeText(el.textContent.trim());
+      btn.textContent = '已复制 ✓';
+      setTimeout(() => (btn.textContent = '复制'), 1200);
+    } catch (e) { /* 剪贴板不可用时静默忽略 */ }
+  });
+});
+</script>
+</body>
+</html>

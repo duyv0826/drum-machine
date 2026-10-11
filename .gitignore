@@ -1,0 +1,7 @@
+# 工具/编辑器产物
+.zcode/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
