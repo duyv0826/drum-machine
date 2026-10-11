@@ -162,6 +162,10 @@
     border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--text);
     font-family: Consolas, monospace;
   }
+  .counter { margin-left: auto; }
+  #busuanzi_value_site_pv, #busuanzi_value_site_uv {
+    color: #5df0a8; font-family: Consolas, monospace;
+  }
 </style>
 </head>
 <body>
@@ -214,8 +218,11 @@
     <span><kbd>空格</kbd> 播放 / 停止</span>
     <span>点击格子编辑节奏（开启时试听）</span>
     <span>点击轨道名称试听音色</span>
+    <span id="busuanzi_container_site_pv" class="counter" style="display:none">访问 <span id="busuanzi_value_site_pv"></span></span>
+    <span id="busuanzi_container_site_uv" style="display:none">· 访客 <span id="busuanzi_value_site_uv"></span></span>
   </footer>
 </div>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 <script>
 'use strict';
