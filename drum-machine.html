@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRUM-909 · 网页鼓机</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #121724;
+    --line: #232b3f;
+    --text: #e8ecf4;
+    --dim: #8b93a7;
+    --accent: #6c8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(1200px 800px at 50% -10%, #1b2438 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 28px 16px 48px;
+  }
+
+  .machine {
+    width: 860px;
+    max-width: 100%;
+    background: linear-gradient(180deg, #151b2c 0%, var(--panel) 100%);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 24px 18px;
+    box-shadow: 0 24px 60px -24px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.02) inset;
+  }
+
+  /* ---------- header ---------- */
+  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(145deg, #2a3554, #171e31);
+    border: 1px solid #33406a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #5df0a8;
+    box-shadow: 0 0 18px -4px rgba(93,240,168,.55);
+  }
+  .brand h1 { font-size: 20px; letter-spacing: 3px; font-weight: 700; }
+  .brand p  { font-size: 12px; color: var(--dim); margin-top: 2px; letter-spacing: 1px; }
+  .badge {
+    font-size: 11px; color: #5df0a8; border: 1px solid rgba(93,240,168,.35);
+    padding: 4px 10px; border-radius: 999px; letter-spacing: 1px;
+    background: rgba(93,240,168,.06);
+  }
+
+  /* ---------- transport ---------- */
+  .transport {
+    display: flex; align-items: center; gap: 18px;
+    background: #0d1220; border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 18px; margin-bottom: 14px;
+  }
+  .play-btn {
+    width: 62px; height: 62px; border-radius: 50%;
+    font-size: 22px; line-height: 1;
+    background: linear-gradient(145deg, #1f2a44, #141b2e);
+    border: 1px solid #34406a; color: #7ef0b2;
+    cursor: pointer; flex: 0 0 auto;
+    transition: box-shadow .15s, transform .05s;
+  }
+  .play-btn:hover { box-shadow: 0 0 22px -4px rgba(126,240,178,.5); }
+  .play-btn:active { transform: scale(.96); }
+  .play-btn.playing { color: #ff6b81; border-color: #7a3a48; box-shadow: 0 0 22px -4px rgba(255,107,129,.45); }
+  .param { flex: 1; min-width: 0; }
+  .param-head {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    font-size: 11px; color: var(--dim); letter-spacing: 1.5px;
+  }
+  .led {
+    font-family: Consolas, "Courier New", monospace; font-size: 17px; font-weight: 700;
+    color: #5df0a8; background: #060a12; border: 1px solid #1f2b45;
+    padding: 1px 10px; border-radius: 6px; min-width: 58px; text-align: center;
+    text-shadow: 0 0 8px rgba(93,240,168,.6);
+  }
+  input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+  /* ---------- toolbar ---------- */
+  .toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .group { display: flex; align-items: center; gap: 8px; }
+  .group-label { font-size: 11px; color: var(--dim); letter-spacing: 2px; margin-right: 2px; }
+  .chip {
+    font-size: 13px; color: var(--text);
+    background: #1a2135; border: 1px solid #2c3752; border-radius: 999px;
+    padding: 6px 16px; cursor: pointer; transition: all .12s;
+  }
+  .chip:hover { border-color: var(--accent); color: #aab8ff; box-shadow: 0 0 14px -6px rgba(108,140,255,.8); }
+  .chip:active { transform: scale(.95); }
+  .chip.ghost { background: transparent; }
+
+  /* ---------- board ---------- */
+  .board { user-select: none; overflow-x: auto; padding-bottom: 4px; }
+  .row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .corner { flex: 0 0 136px; font-size: 10px; color: var(--dim); letter-spacing: 2px; padding-left: 4px; }
+  .stepnum {
+    flex: 0 0 32px; text-align: center;
+    font-family: Consolas, monospace; font-size: 11px; color: #3d475f;
+  }
+  .stepnum.beat { color: #7c89a6; }
+
+  .tlabel {
+    flex: 0 0 96px; height: 38px;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+    background: #101627; border: 1px solid var(--line); border-left: 3px solid var(--c);
+    border-radius: 8px; padding-left: 10px; cursor: pointer;
+    transition: filter .12s;
+  }
+  .tlabel:hover { filter: brightness(1.35); }
+  .tlabel b { font-size: 13px; font-weight: 600; }
+  .tlabel span { font-size: 9px; letter-spacing: 2px; color: var(--c); }
+
+  .mute {
+    flex: 0 0 28px; height: 38px;
+    background: #101627; border: 1px solid var(--line); border-radius: 8px;
+    color: var(--dim); font-size: 11px; font-weight: 700; cursor: pointer;
+    transition: all .12s;
+  }
+  .mute:hover { border-color: #7a3a48; color: #ff6b81; }
+  .mute.on { background: #3a1a24; border-color: #7a3a48; color: #ff6b81; box-shadow: 0 0 10px -4px rgba(255,107,129,.6); }
+
+  .cell {
+    flex: 0 0 32px; height: 38px; border-radius: 8px;
+    background: #171e30; border: 1px solid #252f49;
+    cursor: pointer;
+    transition: background .1s, box-shadow .1s, border-color .1s;
+  }
+  .cell.beat { background: #1c2438; }
+  .cell:hover { border-color: #3d4a70; }
+  .cell.gstart { margin-left: 10px; }
+  .cell.on {
+    background: var(--c);
+    border-color: var(--c);
+    box-shadow: 0 0 12px -2px var(--c);
+  }
+  .cell.now { border-color: #8fa3d9; box-shadow: 0 0 10px -3px rgba(143,163,217,.55); }
+  .cell.on.now { filter: brightness(1.15); }
+  .row.muted .cell { opacity: .35; }
+  @keyframes hit {
+    0%   { filter: brightness(2.3); transform: scale(1.14); }
+    100% { filter: brightness(1);   transform: scale(1); }
+  }
+  .cell.hit { animation: hit .16s ease-out; }
+
+  /* ---------- footer ---------- */
+  .hints {
+    display: flex; gap: 22px; flex-wrap: wrap;
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--dim);
+  }
+  kbd {
+    background: #1a2135; border: 1px solid #2c3752; border-bottom-width: 2px;
+    border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--text);
+    font-family: Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+<div class="machine">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">◉</div>
+      <div>
+        <h1>DRUM-909</h1>
+        <p>网页鼓机音序器 · 纯 Web Audio 合成 · 零依赖</p>
+      </div>
+    </div>
+    <span class="badge">16 STEPS · 6 TRACKS</span>
+  </header>
+
+  <section class="transport">
+    <button id="playBtn" class="play-btn" title="播放 / 停止（空格）">▶</button>
+    <div class="param">
+      <div class="param-head"><span>BPM 速度</span><span id="bpmLed" class="led">110</span></div>
+      <input id="bpmSlider" type="range" min="60" max="200" value="110">
+    </div>
+    <div class="param">
+      <div class="param-head"><span>SWING 摇摆</span><span id="swingLed" class="led">0%</span></div>
+      <input id="swingSlider" type="range" min="0" max="60" value="0">
+    </div>
+    <div class="param">
+      <div class="param-head"><span>VOL 音量</span><span id="volLed" class="led">80</span></div>
+      <input id="volSlider" type="range" min="0" max="100" value="80">
+    </div>
+  </section>
+
+  <section class="toolbar">
+    <div class="group">
+      <span class="group-label">预置节奏</span>
+      <button class="chip" data-preset="rock">摇滚</button>
+      <button class="chip" data-preset="house">House</button>
+      <button class="chip" data-preset="trap">Trap</button>
+      <button class="chip" data-preset="brk">Break</button>
+    </div>
+    <div class="group">
+      <span class="group-label">编辑</span>
+      <button class="chip ghost" id="clearBtn">清空</button>
+      <button class="chip ghost" id="randomBtn">随机 🎲</button>
+    </div>
+  </section>
+
+  <section class="board" id="board"></section>
+
+  <footer class="hints">
+    <span><kbd>空格</kbd> 播放 / 停止</span>
+    <span>点击格子编辑节奏（开启时试听）</span>
+    <span>点击轨道名称试听音色</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+
+/* ================= 配置与状态 ================= */
+const TRACKS = [
+  { id: 'kick',  name: '底鼓', en: 'KICK',   color: '#f5a524' },
+  { id: 'snare', name: '军鼓', en: 'SNARE',  color: '#fb7185' },
+  { id: 'clap',  name: '拍手', en: 'CLAP',   color: '#a78bfa' },
+  { id: 'chat',  name: '闭镲', en: 'CH HAT', color: '#22d3ee' },
+  { id: 'ohat',  name: '开镲', en: 'OP HAT', color: '#34d399' },
+  { id: 'tom',   name: '桶鼓', en: 'TOM',    color: '#f472b6' },
+];
+const STEPS = 16;
+const pattern = TRACKS.map(() => Array(STEPS).fill(false));
+const muted   = TRACKS.map(() => false);
+const cellEls = TRACKS.map(() => []);
+const rowEls  = [];
+
+let bpm = 110, swing = 0;
+let playing = false, timerID = null, currentStep = 0, nextNoteTime = 0;
+let notesInQueue = [], uiStep = -2;
+
+/* ================= 音频引擎 ================= */
+let ctx = null, master = null, noiseBuf = null;
+
+function ensureAudio() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain();
+    master.gain.value = (+volSlider.value / 100) * 0.9;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 4;
+    master.connect(comp);
+    comp.connect(ctx.destination);
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+}
+
+function getNoise() {
+  if (!noiseBuf) {
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+
+const voices = {
+  kick(t) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+    g.gain.setValueAtTime(1.05, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 0.5);
+    // 起振 click
+    const n = ctx.createBufferSource(); n.buffer = getNoise();
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1500;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.25, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+    n.connect(hp); hp.connect(ng); ng.connect(master);
+    n.start(t); n.stop(t + 0.03);
+  },
+  snare(t) {
+    // 基体
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(190, t);
+    o.frequency.exponentialRampToValueAtTime(120, t + 0.08);
+    g.gain.setValueAtTime(0.7, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 0.15);
+    // 噪声层
+    const n = ctx.createBufferSource(); n.buffer = getNoise();
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.6;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.8, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    n.connect(bp); bp.connect(ng); ng.connect(master);
+    n.start(t); n.stop(t + 0.25);
+  },
+  clap(t) {
+    const n = ctx.createBufferSource(); n.buffer = getNoise();
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 1.2;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    [[0, 0.55], [0.012, 0.45], [0.024, 0.5]].forEach(([dt, peak]) => {
+      g.gain.setValueAtTime(peak, t + dt);
+      g.gain.exponentialRampToValueAtTime(0.03, t + dt + 0.01);
+    });
+    g.gain.setValueAtTime(0.5, t + 0.036);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    n.connect(bp); bp.connect(g); g.connect(master);
+    n.start(t); n.stop(t + 0.3);
+  },
+  hat(t, open) {
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000;
+    const g = ctx.createGain();
+    const dur = open ? 0.45 : 0.06;
+    g.gain.setValueAtTime(open ? 0.32 : 0.42, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    [2, 3, 4.16, 5.43, 6.79, 8.21].forEach(r => {
+      const o = ctx.createOscillator();
+      o.type = 'square'; o.frequency.value = 40 * r;
+      o.connect(hp);
+      o.start(t); o.stop(t + dur + 0.02);
+    });
+    hp.connect(g); g.connect(master);
+  },
+  tom(t) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(130, t);
+    o.frequency.exponentialRampToValueAtTime(72, t + 0.25);
+    g.gain.setValueAtTime(0.9, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 0.4);
+  },
+};
+
+/* ================= 调度器（lookahead） ================= */
+const LOOKAHEAD = 25, SCHEDULE_AHEAD = 0.12;
+const stepDur = () => 60 / bpm / 4;
+
+function scheduler() {
+  while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD) {
+    let t = nextNoteTime;
+    if (currentStep % 2 === 1) t += stepDur() * (swing / 100) * 0.5;
+    notesInQueue.push({ step: currentStep, time: t });
+    TRACKS.forEach((tr, i) => {
+      if (pattern[i][currentStep] && !muted[i]) {
+        if (tr.id === 'chat') voices.hat(t, false);
+        else if (tr.id === 'ohat') voices.hat(t, true);
+        else voices[tr.id](t);
+      }
+    });
+    nextNoteTime += stepDur();
+    currentStep = (currentStep + 1) % STEPS;
+  }
+}
+
+function draw() {
+  if (playing && ctx) {
+    while (notesInQueue.length && notesInQueue[0].time <= ctx.currentTime) {
+      uiStep = notesInQueue[0].step;
+      notesInQueue.shift();
+    }
+    if (uiStep !== draw.last) {
+      draw.last = uiStep;
+      for (let s = 0; s < STEPS; s++)
+        for (let t = 0; t < TRACKS.length; t++)
+          cellEls[t][s].classList.toggle('now', s === uiStep);
+      if (uiStep >= 0)
+        for (let t = 0; t < TRACKS.length; t++)
+          if (pattern[t][uiStep] && !muted[t]) flash(cellEls[t][uiStep]);
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw.last = -2;
+requestAnimationFrame(draw);
+
+function start() {
+  ensureAudio();
+  currentStep = 0;
+  nextNoteTime = ctx.currentTime + 0.06;
+  notesInQueue = [];
+  playing = true;
+  timerID = setInterval(scheduler, LOOKAHEAD);
+  playBtn.classList.add('playing');
+  playBtn.textContent = '⏹';
+}
+function stop() {
+  playing = false;
+  clearInterval(timerID);
+  notesInQueue = [];
+  uiStep = -2; draw.last = -2;
+  for (let s = 0; s < STEPS; s++)
+    for (let t = 0; t < TRACKS.length; t++) {
+      cellEls[t][s].classList.remove('now', 'hit');
+    }
+  playBtn.classList.remove('playing');
+  playBtn.textContent = '▶';
+}
+function togglePlay() { playing ? stop() : start(); }
+
+/* ================= 构建网格 UI ================= */
+const board = document.getElementById('board');
+(function buildBoard() {
+  const head = document.createElement('div');
+  head.className = 'row';
+  const corner = document.createElement('div');
+  corner.className = 'corner';
+  corner.textContent = '音轨 / 步';
+  head.appendChild(corner);
+  for (let s = 0; s < STEPS; s++) {
+    const num = document.createElement('div');
+    num.className = 'stepnum' + (s % 4 === 0 ? ' beat' : '') + (s % 4 === 0 && s > 0 ? ' gstart' : '');
+    num.textContent = s % 4 === 0 ? (s / 4 + 1) : '·';
+    head.appendChild(num);
+  }
+  board.appendChild(head);
+
+  TRACKS.forEach((tr, t) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    rowEls.push(row);
+
+    const label = document.createElement('button');
+    label.className = 'tlabel';
+    label.style.setProperty('--c', tr.color);
+    label.title = '试听 ' + tr.name;
+    label.innerHTML = `<b>${tr.name}</b><span>${tr.en}</span>`;
+    label.addEventListener('click', () => {
+      ensureAudio();
+      tr.id === 'chat' ? voices.hat(ctx.currentTime + 0.001, false)
+        : tr.id === 'ohat' ? voices.hat(ctx.currentTime + 0.001, true)
+        : voices[tr.id](ctx.currentTime + 0.001);
+    });
+    row.appendChild(label);
+
+    const mute = document.createElement('button');
+    mute.className = 'mute';
+    mute.textContent = 'M';
+    mute.title = '静音 / 取消静音';
+    mute.addEventListener('click', () => {
+      muted[t] = !muted[t];
+      mute.classList.toggle('on', muted[t]);
+      row.classList.toggle('muted', muted[t]);
+    });
+    row.appendChild(mute);
+
+    for (let s = 0; s < STEPS; s++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (s % 4 === 0 ? ' beat' : '') + (s % 4 === 0 && s > 0 ? ' gstart' : '');
+      cell.style.setProperty('--c', tr.color);
+      cell.title = `${tr.name} · 第 ${s + 1} 步`;
+      cell.addEventListener('click', () => {
+        pattern[t][s] = !pattern[t][s];
+        cell.classList.toggle('on', pattern[t][s]);
+        if (pattern[t][s]) {
+          ensureAudio();
+          tr.id === 'chat' ? voices.hat(ctx.currentTime + 0.001, false)
+            : tr.id === 'ohat' ? voices.hat(ctx.currentTime + 0.001, true)
+            : voices[tr.id](ctx.currentTime + 0.001);
+          flash(cell);
+        }
+      });
+      cellEls[t].push(cell);
+      row.appendChild(cell);
+    }
+    board.appendChild(row);
+  });
+})();
+
+function flash(el) {
+  el.classList.remove('hit');
+  void el.offsetWidth;
+  el.classList.add('hit');
+}
+function refreshGrid() {
+  TRACKS.forEach((_, t) => {
+    for (let s = 0; s < STEPS; s++)
+      cellEls[t][s].classList.toggle('on', pattern[t][s]);
+  });
+}
+
+/* ================= 预置节奏 ================= */
+const PRESETS = {
+  rock: {
+    bpm: 120, swing: 0, rows: {
+      kick:  '1000100010001000',
+      snare: '0000100000001000',
+      chat:  '1010101010101010',
+    }
+  },
+  house: {
+    bpm: 124, swing: 0, rows: {
+      kick:  '1000100010001000',
+      clap:  '0000100000001000',
+      chat:  '1000100010001000',
+      ohat:  '0010001000100010',
+    }
+  },
+  trap: {
+    bpm: 140, swing: 0, rows: {
+      kick:  '1000001000100000',
+      snare: '0000000010000000',
+      chat:  '1111111111111111',
+    }
+  },
+  brk: {
+    bpm: 165, swing: 0, rows: {
+      kick:  '1010000000100000',
+      snare: '0000100000001000',
+      chat:  '1010101010101010',
+      tom:   '0000000000000001',
+    }
+  },
+};
+
+function applyPreset(p) {
+  TRACKS.forEach((tr, i) => {
+    const str = p.rows[tr.id] || '0'.repeat(STEPS);
+    for (let s = 0; s < STEPS; s++) pattern[i][s] = str[s] === '1';
+  });
+  bpm = p.bpm; swing = p.swing || 0;
+  bpmSlider.value = bpm; bpmLed.textContent = bpm;
+  swingSlider.value = swing; swingLed.textContent = swing + '%';
+  refreshGrid();
+}
+
+/* ================= 随机 / 清空 ================= */
+function randomize() {
+  const prob = { kick: 0.28, snare: 0.10, clap: 0.10, chat: 0.5, ohat: 0.08, tom: 0.06 };
+  TRACKS.forEach((tr, i) => {
+    for (let s = 0; s < STEPS; s++) {
+      let p = prob[tr.id];
+      if (tr.id === 'kick' && s === 0) p = 0.9;
+      if (tr.id === 'snare' && (s === 4 || s === 12)) p = 0.7;
+      pattern[i][s] = Math.random() < p;
+    }
+  });
+  refreshGrid();
+}
+function clearAll() {
+  TRACKS.forEach((_, i) => pattern[i].fill(false));
+  refreshGrid();
+}
+
+/* ================= 控件绑定 ================= */
+const playBtn   = document.getElementById('playBtn');
+const bpmSlider = document.getElementById('bpmSlider');
+const swingSlider = document.getElementById('swingSlider');
+const volSlider = document.getElementById('volSlider');
+const bpmLed    = document.getElementById('bpmLed');
+const swingLed  = document.getElementById('swingLed');
+const volLed    = document.getElementById('volLed');
+
+playBtn.addEventListener('click', togglePlay);
+bpmSlider.addEventListener('input', () => { bpm = +bpmSlider.value; bpmLed.textContent = bpm; });
+swingSlider.addEventListener('input', () => { swing = +swingSlider.value; swingLed.textContent = swing + '%'; });
+volSlider.addEventListener('input', () => {
+  volLed.textContent = volSlider.value;
+  if (master) master.gain.setTargetAtTime((+volSlider.value / 100) * 0.9, ctx.currentTime, 0.02);
+});
+document.querySelectorAll('[data-preset]').forEach(btn =>
+  btn.addEventListener('click', () => applyPreset(PRESETS[btn.dataset.preset])));
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('randomBtn').addEventListener('click', randomize);
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+});
+
+/* 初始加载一个预置，打开即能玩 */
+applyPreset(PRESETS.rock);
+</script>
+</body>
+</html>
