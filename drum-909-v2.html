@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DRUM-909 V2 · 网页鼓机</title>
-<meta name="description" content="纯 Web Audio 实时合成的网页鼓机音序器 V2：4 组音色库、循环曲模式、重音、每轨音量、TAP 测速、分享链接，单文件零依赖。">
+<meta name="description" content="纯 Web Audio 实时合成的网页鼓机音序器 V2：9 轨 × 8/16/32 步、4 组音色库、循环曲模式、重音、工程导出/导入、分享链接，单文件零依赖。">
 <meta name="theme-color" content="#0b0e14">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0e14'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%235df0a8' stroke-width='3'/%3E%3C/svg%3E">
 <style>
@@ -114,6 +114,7 @@
   }
   .chip.bk { min-width: 40px; text-align: center; font-family: Consolas, monospace; font-weight: 700; }
   .chip.bk.dim { opacity: .45; }
+  .chip.st { min-width: 40px; text-align: center; font-family: Consolas, monospace; font-weight: 700; }
   .copySel {
     font-size: 12px; color: var(--text); background: #1a2135;
     border: 1px solid #2c3752; border-radius: 8px; padding: 5px 8px; cursor: pointer;
@@ -211,10 +212,10 @@
       <div class="logo">◉</div>
       <div>
         <h1>DRUM-909 <span style="color:#5df0a8">V2</span></h1>
-        <p>网页鼓机音序器 · 音色库 / 循环曲 / 重音 / 分享</p>
+        <p>网页鼓机音序器 · 音色库 / 循环曲 / 重音 / 工程导出</p>
       </div>
     </div>
-    <span class="badge">4 BANKS · 16 STEPS · 6 TRACKS</span>
+    <span class="badge">4 BANKS · 9 TRACKS · 8/16/32 STEPS</span>
   </header>
 
   <section class="transport">
@@ -259,6 +260,12 @@
       </select>
     </div>
     <div class="group">
+      <span class="group-label">步数</span>
+      <button class="chip st" data-steps="8" title="8 步">8</button>
+      <button class="chip st active" data-steps="16" title="16 步">16</button>
+      <button class="chip st" data-steps="32" title="32 步">32</button>
+    </div>
+    <div class="group">
       <span class="group-label">播放模式</span>
       <button class="chip mchip active" data-mode="p" title="只循环当前音色库">单节奏</button>
       <button class="chip mchip" data-mode="s" title="依次循环所有非空音色库 A→B→C→D">循环曲</button>
@@ -267,6 +274,8 @@
       <span class="group-label">编辑</span>
       <button class="chip ghost" id="clearBtn">清空</button>
       <button class="chip ghost" id="randomBtn">随机 🎲</button>
+      <button class="chip ghost" id="exportBtn" title="下载当前全部内容为 JSON 工程文件">导出 💾</button>
+      <button class="chip ghost" id="importBtn" title="导入 JSON 工程文件">导入 📂</button>
       <button class="chip ghost" id="shareBtn" title="复制含当前全部内容的链接">分享 🔗</button>
       <button class="chip ghost" id="resetBtn" title="清空所有音色库并恢复默认">重置</button>
     </div>
@@ -277,35 +286,43 @@
   <footer class="hints">
     <span><kbd>空格</kbd> 播放 / 停止</span>
     <span>点格子：开 → <b>重音</b> → 关</span>
-    <span><kbd>1</kbd>–<kbd>6</kbd> 试听音色</span>
+    <span><kbd>1</kbd>–<kbd>9</kbd> 试听音色</span>
     <span>每轨右侧滑杆调音量</span>
     <span>「循环曲」依次播放非空音色库</span>
     <a class="hire" href="hire.html">🛠 网页定制接单</a>
   </footer>
 </div>
 <div id="toast" class="toast"></div>
+<input type="file" id="importFile" accept=".json,application/json" style="display:none">
 
 <script>
+window.addEventListener('error', function (e) { document.title = 'BOOT-ERR: ' + e.message + ' @' + e.lineno + ':' + e.colno; });
 'use strict';
 
 /* ================= 配置与状态 ================= */
 const TRACKS = [
-  { id: 'kick',  name: '底鼓', en: 'KICK',   color: '#f5a524' },
-  { id: 'snare', name: '军鼓', en: 'SNARE',  color: '#fb7185' },
-  { id: 'clap',  name: '拍手', en: 'CLAP',   color: '#a78bfa' },
-  { id: 'chat',  name: '闭镲', en: 'CH HAT', color: '#22d3ee' },
-  { id: 'ohat',  name: '开镲', en: 'OP HAT', color: '#34d399' },
-  { id: 'tom',   name: '桶鼓', en: 'TOM',    color: '#f472b6' },
+  { id: 'kick',    name: '底鼓', en: 'KICK',   color: '#f5a524' },
+  { id: 'snare',   name: '军鼓', en: 'SNARE',  color: '#fb7185' },
+  { id: 'clap',    name: '拍手', en: 'CLAP',   color: '#a78bfa' },
+  { id: 'chat',    name: '闭镲', en: 'CH HAT', color: '#22d3ee' },
+  { id: 'ohat',    name: '开镲', en: 'OP HAT', color: '#34d399' },
+  { id: 'crash',   name: '吊镲', en: 'CRASH',  color: '#fde047' },
+  { id: 'rim',     name: '边击', en: 'RIM',    color: '#9ca3af' },
+  { id: 'cowbell', name: '牛铃', en: 'BELL',   color: '#f0abfc' },
+  { id: 'tom',     name: '桶鼓', en: 'TOM',    color: '#f472b6' },
 ];
-const STEPS = 16, NBANKS = 4, LS_KEY = 'drum909v2';
+const NBANKS = 4, MAX_STEPS = 32, LS_KEY = 'drum909v2';
+const STEP_OPTIONS = [8, 16, 32];
 
-/* 步进值：0 = 关，1 = 常规，2 = 重音 */
-let banks   = Array.from({ length: NBANKS }, () => TRACKS.map(() => Array(STEPS).fill(0)));
+/* 步进值：0 = 关，1 = 常规，2 = 重音。音序内部始终按 MAX_STEPS=32 存，
+   steps 只决定显示与播放的长度，切大步数时保留的内容会回来。 */
+let steps = 16;
+let banks   = Array.from({ length: NBANKS }, () => TRACKS.map(() => Array(MAX_STEPS).fill(0)));
 let muted   = TRACKS.map(() => false);
 let trackVol = TRACKS.map(() => 100);
 let cur = 0, mode = 'p';           // mode: 'p' 单节奏 | 's' 循环曲
 const cellEls = TRACKS.map(() => []);
-const rowEls = [], muteEls = [], tvolEls = [];
+const rowEls = [], muteEls = [], tvolEls = [], stepnumEls = [];
 
 let bpm = 110, swing = 0;
 let playing = false, timerID = null, currentStep = 0, nextNoteTime = 0;
@@ -407,6 +424,49 @@ const voices = {
     });
     hp.connect(g); g.connect(out);
   },
+  crash(t, v, out) {
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 5000;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.3 * v, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
+    [1.08, 1.39, 1.53, 2.0, 2.61, 2.79].forEach(r => {
+      const o = ctx.createOscillator();
+      o.type = 'square'; o.frequency.value = 205 * r;
+      o.connect(hp);
+      o.start(t); o.stop(t + 1.15);
+    });
+    hp.connect(g); g.connect(out);
+  },
+  rim(t, v, out) {
+    [[1712, 0.5, 0.045], [445, 0.6, 0.06]].forEach(([f, a, d]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(a * v, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(g); g.connect(out);
+      o.start(t); o.stop(t + d + 0.01);
+    });
+    const n = ctx.createBufferSource(); n.buffer = getNoise();
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2500;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.35 * v, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.018);
+    n.connect(hp); hp.connect(ng); ng.connect(out);
+    n.start(t); n.stop(t + 0.025);
+  },
+  cowbell(t, v, out) {
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 1;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.9 * v, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+    [562, 845].forEach(f => {
+      const o = ctx.createOscillator();
+      o.type = 'square'; o.frequency.value = f;
+      o.connect(bp);
+      o.start(t); o.stop(t + 0.3);
+    });
+    bp.connect(g); g.connect(out);
+  },
   tom(t, v, out) {
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.type = 'sine';
@@ -456,7 +516,7 @@ function scheduler() {
       if (v && !muted[i]) trigger(tr, t, v === 2 ? 1.35 : 1, i);
     });
     nextNoteTime += stepDur();
-    const ns = (currentStep + 1) % STEPS;
+    const ns = (currentStep + 1) % steps;
     if (ns === 0 && mode === 's') advanceSongBank();
     currentStep = ns;
   }
@@ -470,7 +530,7 @@ function draw() {
     }
     if (uiStep !== draw.last) {
       draw.last = uiStep;
-      for (let s = 0; s < STEPS; s++)
+      for (let s = 0; s < steps; s++)
         for (let t = 0; t < TRACKS.length; t++)
           cellEls[t][s].classList.toggle('now', s === uiStep);
       if (uiStep >= 0)
@@ -499,7 +559,7 @@ function stop() {
   clearInterval(timerID);
   notesInQueue = [];
   uiStep = -2; draw.last = -2;
-  for (let s = 0; s < STEPS; s++)
+  for (let s = 0; s < MAX_STEPS; s++)
     for (let t = 0; t < TRACKS.length; t++)
       cellEls[t][s].classList.remove('now', 'hit');
   playBtn.classList.remove('playing');
@@ -516,11 +576,12 @@ const board = document.getElementById('board');
   corner.className = 'corner';
   corner.textContent = '音轨 / 步 / 音量';
   head.appendChild(corner);
-  for (let s = 0; s < STEPS; s++) {
+  for (let s = 0; s < MAX_STEPS; s++) {
     const num = document.createElement('div');
     num.className = 'stepnum' + (s % 4 === 0 ? ' beat' : '') + (s % 4 === 0 && s > 0 ? ' gstart' : '');
     num.textContent = s % 4 === 0 ? (s / 4 + 1) : '·';
     head.appendChild(num);
+    stepnumEls.push(num);
   }
   board.appendChild(head);
 
@@ -567,7 +628,7 @@ const board = document.getElementById('board');
     row.appendChild(tvol);
     tvolEls.push(tvol);
 
-    for (let s = 0; s < STEPS; s++) {
+    for (let s = 0; s < MAX_STEPS; s++) {
       const cell = document.createElement('div');
       cell.className = 'cell' + (s % 4 === 0 ? ' beat' : '') + (s % 4 === 0 && s > 0 ? ' gstart' : '');
       cell.style.setProperty('--c', tr.color);
@@ -599,12 +660,34 @@ function flash(el) {
 }
 function refreshGrid() {
   TRACKS.forEach((_, t) => {
-    for (let s = 0; s < STEPS; s++) {
+    for (let s = 0; s < MAX_STEPS; s++) {
       cellEls[t][s].classList.toggle('on', banks[cur][t][s] > 0);
       cellEls[t][s].classList.toggle('acc', banks[cur][t][s] === 2);
     }
   });
 }
+
+/* ================= 步数切换 ================= */
+const stepChips = Array.from(document.querySelectorAll('[data-steps]'));
+function syncStepsChips() {
+  stepChips.forEach(c => c.classList.toggle('active', +c.dataset.steps === steps));
+}
+function applyStepsVisibility() {
+  for (let s = 0; s < MAX_STEPS; s++) {
+    const show = s < steps ? '' : 'none';
+    stepnumEls[s].style.display = show;
+    for (let t = 0; t < TRACKS.length; t++) cellEls[t][s].style.display = show;
+  }
+}
+function setSteps(n) {
+  steps = n;
+  currentStep %= steps;
+  applyStepsVisibility();
+  syncStepsChips();
+  if (!playing) { uiStep = -2; draw.last = -2; }
+  save();
+}
+stepChips.forEach(c => c.addEventListener('click', () => setSteps(+c.dataset.steps)));
 
 /* ================= 音色库 chips / 模式 ================= */
 const bankChips = Array.from(document.querySelectorAll('[data-bank]'));
@@ -644,13 +727,14 @@ copySel.addEventListener('change', () => {
   toast(`已复制到音色库 ${'ABCD'[to]}`);
 });
 
-/* ================= 预置节奏（2 = 重音） ================= */
+/* ================= 预置节奏（2 = 重音，不足 32 步右侧补零） ================= */
 const PRESETS = {
   rock: {
     bpm: 120, swing: 0, rows: {
       kick:  '1000100010001000',
       snare: '0000200000002000',
       chat:  '1010101010101010',
+      crash: '2000000000000000',
     }
   },
   house: {
@@ -659,6 +743,7 @@ const PRESETS = {
       clap:  '0000200000002000',
       chat:  '1000100010001000',
       ohat:  '0010001000100010',
+      rim:   '0000001000000010',
     }
   },
   trap: {
@@ -673,6 +758,7 @@ const PRESETS = {
       kick:  '1010000000100000',
       snare: '0000200000002000',
       chat:  '1010101010101010',
+      crash: '2000000000000000',
       tom:   '0000000000000001',
     }
   },
@@ -682,6 +768,7 @@ const PRESETS = {
       snare: '0000200000002001',
       chat:  '1011101110111011',
       ohat:  '0000000000100000',
+      cowbell: '0000000000010000',
     }
   },
   dnb: {
@@ -690,6 +777,7 @@ const PRESETS = {
       snare: '0000200000002000',
       chat:  '1010101010101010',
       ohat:  '0010000000100010',
+      crash: '1000000000000000',
     }
   },
 };
@@ -702,8 +790,9 @@ function syncSliders() {
 function applyPreset(p) {
   const bk = banks[cur];
   TRACKS.forEach((tr, i) => {
-    const str = p.rows[tr.id] || '0'.repeat(STEPS);
-    for (let s = 0; s < STEPS; s++) bk[i][s] = str[s] === '2' ? 2 : str[s] === '1' ? 1 : 0;
+    const str = p.rows[tr.id] || '';
+    for (let s = 0; s < MAX_STEPS; s++)
+      bk[i][s] = str[s] === '2' ? 2 : str[s] === '1' ? 1 : 0;
   });
   bpm = p.bpm; swing = p.swing || 0;
   syncSliders();
@@ -714,13 +803,14 @@ function applyPreset(p) {
 
 /* ================= 随机 / 清空 ================= */
 function randomize() {
-  const prob = { kick: 0.28, snare: 0.10, clap: 0.10, chat: 0.5, ohat: 0.08, tom: 0.06 };
+  const prob = { kick: 0.28, snare: 0.10, clap: 0.10, chat: 0.5, ohat: 0.08, crash: 0.01, rim: 0.08, cowbell: 0.06, tom: 0.06 };
   const bk = banks[cur];
   TRACKS.forEach((tr, i) => {
-    for (let s = 0; s < STEPS; s++) {
+    for (let s = 0; s < steps; s++) {
       let p = prob[tr.id];
       if (tr.id === 'kick' && s === 0) p = 0.9;
       if (tr.id === 'snare' && (s === 4 || s === 12)) p = 0.7;
+      if (tr.id === 'crash') p = s === 0 ? 0.5 : 0.01;
       const hit = Math.random() < p;
       const acc = hit && ((tr.id === 'kick' && s === 0) || (tr.id === 'snare' && (s === 4 || s === 12)));
       bk[i][s] = hit ? (acc ? 2 : 1) : 0;
@@ -737,7 +827,7 @@ function clearAll() {
   save();
 }
 function resetAll() {
-  banks = Array.from({ length: NBANKS }, () => TRACKS.map(() => Array(STEPS).fill(0)));
+  banks = Array.from({ length: NBANKS }, () => TRACKS.map(() => Array(MAX_STEPS).fill(0)));
   muted = TRACKS.map(() => false);
   trackVol = TRACKS.map(() => 100);
   if (trackGains) trackGains.forEach((g, i) => g.gain.value = 1);
@@ -749,15 +839,15 @@ function resetAll() {
   try { localStorage.removeItem(LS_KEY); } catch (e) {}
   history.replaceState(null, '', location.pathname + location.search);
   cur = 0; mode = 'p';
-  syncModeChips();
+  setSteps(16);
   applyPreset(PRESETS.rock);
   toast('已重置');
 }
 
-/* ================= 保存 / 载入 / 分享 ================= */
+/* ================= 保存 / 载入 / 导出 / 分享 ================= */
 function packState() {
   return {
-    v: 1, b: bpm, s: swing, c: cur,
+    v: 2, b: bpm, s: swing, st: steps, c: cur,
     m: muted.map(x => x ? 1 : 0).join(''),
     vo: volSlider.value, tv: trackVol.join(','),
     k: banks.map(bk => bk.map(r => r.join('')).join('|')).join('?'),
@@ -768,24 +858,30 @@ function unpackState(o) {
   if (ks.length !== NBANKS) throw new Error('bad banks');
   banks = ks.map(bk => {
     const rows = bk.split('|');
-    if (rows.length !== TRACKS.length) throw new Error('bad rows');
+    if (rows.length > TRACKS.length) throw new Error('bad rows');
+    // 兼容旧存档（6 轨 / 16 步）：缺的轨、缺的步补零
+    while (rows.length < TRACKS.length) rows.push('0'.repeat(MAX_STEPS));
     return rows.map(r => {
-      if (r.length !== STEPS) throw new Error('bad steps');
-      return r.split('').map(ch => {
+      if (r.length > MAX_STEPS) throw new Error('bad steps');
+      const vals = r.split('').map(ch => {
         const n = +ch;
         return n >= 0 && n <= 2 ? n : 0;
       });
+      while (vals.length < MAX_STEPS) vals.push(0);
+      return vals;
     });
   });
   cur = Math.min(NBANKS - 1, Math.max(0, o.c | 0));
-  if (String(o.m).length !== TRACKS.length) throw new Error('bad mute');
-  muted = String(o.m).split('').map(Number).map(Boolean);
+  if (String(o.m).length > TRACKS.length) throw new Error('bad mute');
+  muted = TRACKS.map((_, i) => String(o.m)[i] === '1');
   bpm = Math.min(200, Math.max(60, +o.b || 110));
   swing = Math.min(60, Math.max(0, +o.s || 0));
+  steps = STEP_OPTIONS.includes(+o.st) ? +o.st : 16;
   volSlider.value = Math.min(100, Math.max(0, +o.vo || 80));
   const tv = String(o.tv).split(',').map(Number);
   trackVol = TRACKS.map((_, i) => (tv[i] >= 0 && tv[i] <= 100) ? tv[i] : 100);
   if (trackGains) trackGains.forEach((g, i) => g.gain.value = trackVol[i] / 100);
+  currentStep %= steps;
   syncUI();
 }
 function syncUI() {
@@ -795,6 +891,8 @@ function syncUI() {
     m.classList.toggle('on', muted[i]);
     rowEls[i].classList.toggle('muted', muted[i]);
   });
+  applyStepsVisibility();
+  syncStepsChips();
   refreshGrid();
   updateBankChips();
   syncModeChips();
@@ -839,6 +937,36 @@ function share() {
     navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done));
   else fallbackCopy(url, done);
 }
+
+/* 导出 / 导入工程文件（JSON） */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(packState(), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'drum909-project.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  toast('已导出工程文件 💾');
+});
+
+const importFile = document.getElementById('importFile');
+document.getElementById('importBtn').addEventListener('click', () => importFile.click());
+importFile.addEventListener('change', () => {
+  const f = importFile.files[0];
+  importFile.value = '';   // 允许重复选择同一文件
+  if (!f) return;
+  f.text().then(txt => {
+    try {
+      const obj = JSON.parse(txt);
+      if (!obj || typeof obj.k !== 'string') throw new Error('bad file');
+      unpackState(obj);
+      save();
+      toast('工程已导入 ✅');
+    } catch (e) {
+      toast('导入失败：文件格式不对');
+    }
+  });
+});
 
 /* ================= 控件绑定 ================= */
 const playBtn     = document.getElementById('playBtn');
@@ -889,11 +1017,13 @@ window.addEventListener('keydown', e => {
     togglePlay();
     return;
   }
-  const m = /^Digit([1-6])$/.exec(e.code);
+  const m = /^Digit([1-9])$/.exec(e.code);
   if (m && !e.repeat) {
     const i = +m[1] - 1;
-    ensureAudio();
-    trigger(TRACKS[i], ctx.currentTime + 0.001, 1, i);
+    if (i < TRACKS.length) {
+      ensureAudio();
+      trigger(TRACKS[i], ctx.currentTime + 0.001, 1, i);
+    }
   }
 });
 
