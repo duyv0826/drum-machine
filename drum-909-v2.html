@@ -15,6 +15,57 @@
     --text: #e8ecf4;
     --dim: #8b93a7;
     --accent: #6c8cff;
+    /* 表面与控件 */
+    --glow: #1b2438;
+    --panel2: #151b2c;
+    --inset: var(--inset);
+    --inset2: var(--inset2);
+    --chip: var(--chip);
+    --chipline: var(--chipline);
+    --hovertext: #aab8ff;
+    --cell: #171e30;
+    --cellbeat: #1c2438;
+    --cellline: #252f49;
+    --stepdim: #3d475f;
+    --stepnum: #7c89a6;
+    --nowline: #8fa3d9;
+    /* 绿色 LED 系 */
+    --green: var(--green);
+    --ledbg: var(--ledbg);
+    --ledline: var(--ledline);
+    --playcolor: var(--playcolor);
+    --pbg1: var(--pbg1);
+    --pbg2: var(--pbg2);
+    --playline: var(--playline);
+  }
+  /* ---------- 浅色主题 ---------- */
+  body.light {
+    --bg: #e9edf4;
+    --panel: #f4f6fa;
+    --line: #d7dde9;
+    --text: #1c2434;
+    --dim: #6a7284;
+    --accent: #4a6cf0;
+    --glow: #d3dced;
+    --panel2: #fbfcfe;
+    --inset: #eef1f7;
+    --inset2: #eef1f8;
+    --chip: #e4e9f2;
+    --chipline: #c3ccdd;
+    --hovertext: #4a6cf0;
+    --cell: #e2e7f1;
+    --cellbeat: #d9e0ee;
+    --cellline: #c5cedf;
+    --stepdim: #9aa3b6;
+    --stepnum: #5a6478;
+    --nowline: #5b76c9;
+    --green: #0a9058;
+    --ledbg: #d9f4e8;
+    --ledline: #b5e3cf;
+    --playcolor: #0a9058;
+    --pbg1: #ffffff;
+    --pbg2: #eef1f7;
+    --playline: #b9c4d8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -22,7 +73,7 @@
   * { -webkit-tap-highlight-color: transparent; }
   button, .cell, input[type="range"] { touch-action: manipulation; }
   body {
-    background: radial-gradient(1200px 800px at 50% -10%, #1b2438 0%, var(--bg) 60%);
+    background: radial-gradient(1200px 800px at 50% -10%, var(--glow) 0%, var(--bg) 60%);
     color: var(--text);
     font-family: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
     min-height: 100vh;
@@ -35,7 +86,7 @@
   .machine {
     width: 920px;
     max-width: 100%;
-    background: linear-gradient(180deg, #151b2c 0%, var(--panel) 100%);
+    background: linear-gradient(180deg, var(--panel2) 0%, var(--panel) 100%);
     border: 1px solid var(--line);
     border-radius: 18px;
     padding: 22px 24px 18px;
@@ -50,28 +101,28 @@
     background: linear-gradient(145deg, #2a3554, #171e31);
     border: 1px solid #33406a;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #5df0a8;
-    box-shadow: 0 0 18px -4px rgba(93,240,168,.55);
+    font-size: 20px; color: var(--green);
+    box-shadow: 0 0 18px -4px color-mix(in srgb, var(--green) 55%, transparent);
   }
   .brand h1 { font-size: 20px; letter-spacing: 3px; font-weight: 700; }
   .brand p  { font-size: 12px; color: var(--dim); margin-top: 2px; letter-spacing: 1px; }
   .badge {
-    font-size: 11px; color: #5df0a8; border: 1px solid rgba(93,240,168,.35);
+    font-size: 11px; color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
     padding: 4px 10px; border-radius: 999px; letter-spacing: 1px;
-    background: rgba(93,240,168,.06);
+    background: color-mix(in srgb, var(--green) 8%, transparent);
   }
 
   /* ---------- transport ---------- */
   .transport {
     display: flex; align-items: center; gap: 18px;
-    background: #0d1220; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--inset); border: 1px solid var(--line); border-radius: 14px;
     padding: 14px 18px; margin-bottom: 14px;
   }
   .play-btn {
     width: 62px; height: 62px; border-radius: 50%;
     font-size: 22px; line-height: 1;
-    background: linear-gradient(145deg, #1f2a44, #141b2e);
-    border: 1px solid #34406a; color: #7ef0b2;
+    background: linear-gradient(145deg, var(--pbg1), var(--pbg2));
+    border: 1px solid var(--playline); color: var(--playcolor);
     cursor: pointer; flex: 0 0 auto;
     transition: box-shadow .15s, transform .05s;
   }
@@ -85,18 +136,18 @@
   }
   .led {
     font-family: Consolas, "Courier New", monospace; font-size: 17px; font-weight: 700;
-    color: #5df0a8; background: #060a12; border: 1px solid #1f2b45;
+    color: var(--green); background: var(--ledbg); border: 1px solid var(--ledline);
     padding: 1px 10px; border-radius: 6px; min-width: 58px; text-align: center;
-    text-shadow: 0 0 8px rgba(93,240,168,.6);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--green) 60%, transparent);
   }
   input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
   .tap {
     flex: 0 0 auto; height: 58px; padding: 0 16px;
-    font-size: 12px; letter-spacing: 2px; font-weight: 700; color: #5df0a8;
-    background: #0d1220; border: 1px solid #2c3752; border-radius: 12px;
+    font-size: 12px; letter-spacing: 2px; font-weight: 700; color: var(--green);
+    background: var(--inset); border: 1px solid var(--chipline); border-radius: 12px;
     cursor: pointer; transition: all .12s;
   }
-  .tap:hover { border-color: rgba(93,240,168,.6); box-shadow: 0 0 14px -6px rgba(93,240,168,.8); }
+  .tap:hover { border-color: color-mix(in srgb, var(--green) 60%, transparent); box-shadow: 0 0 14px -6px color-mix(in srgb, var(--green) 80%, transparent); }
   .tap:active { transform: scale(.95); }
 
   /* ---------- toolbar ---------- */
@@ -105,10 +156,10 @@
   .group-label { font-size: 11px; color: var(--dim); letter-spacing: 2px; margin-right: 2px; white-space: nowrap; }
   .chip {
     font-size: 13px; color: var(--text); white-space: nowrap;
-    background: #1a2135; border: 1px solid #2c3752; border-radius: 999px;
+    background: var(--chip); border: 1px solid var(--chipline); border-radius: 999px;
     padding: 6px 16px; cursor: pointer; transition: all .12s;
   }
-  .chip:hover { border-color: var(--accent); color: #aab8ff; box-shadow: 0 0 14px -6px rgba(108,140,255,.8); }
+  .chip:hover { border-color: var(--accent); color: var(--hovertext); box-shadow: 0 0 14px -6px rgba(108,140,255,.8); }
   .chip:active { transform: scale(.95); }
   .chip.ghost { background: transparent; }
   .chip.active {
@@ -119,11 +170,11 @@
   .chip.bk.dim { opacity: .45; }
   .chip.st { min-width: 40px; text-align: center; font-family: Consolas, monospace; font-weight: 700; }
   .copySel {
-    font-size: 12px; color: var(--text); background: #1a2135;
-    border: 1px solid #2c3752; border-radius: 8px; padding: 5px 8px; cursor: pointer;
+    font-size: 12px; color: var(--text); background: var(--chip);
+    border: 1px solid var(--chipline); border-radius: 8px; padding: 5px 8px; cursor: pointer;
   }
   .copySel:hover { border-color: var(--accent); }
-  .copySel option { background: #1a2135; }
+  .copySel option { background: var(--chip); }
 
   /* ---------- board ---------- */
   .board { user-select: none; overflow-x: auto; padding-bottom: 4px; }
@@ -131,24 +182,24 @@
   .corner { flex: 0 0 182px; font-size: 10px; color: var(--dim); letter-spacing: 2px; padding-left: 4px; }
   .stepnum {
     flex: 0 0 32px; text-align: center;
-    font-family: Consolas, monospace; font-size: 11px; color: #3d475f;
+    font-family: Consolas, monospace; font-size: 11px; color: var(--stepdim);
   }
-  .stepnum.beat { color: #7c89a6; }
+  .stepnum.beat { color: var(--stepnum); }
 
   .tlabel {
     flex: 0 0 96px; height: 38px;
     display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
-    background: #101627; border: 1px solid var(--line); border-left: 3px solid var(--c);
+    background: var(--inset2); border: 1px solid var(--line); border-left: 3px solid var(--c);
     border-radius: 8px; padding-left: 10px; cursor: pointer;
     transition: filter .12s;
   }
   .tlabel:hover { filter: brightness(1.35); }
   .tlabel b { font-size: 13px; font-weight: 600; }
-  .tlabel span { font-size: 9px; letter-spacing: 2px; color: var(--c); }
+  .tlabel span { font-size: 9px; letter-spacing: 2px; color: color-mix(in srgb, var(--c) 72%, var(--text)); }
 
   .mute {
     flex: 0 0 28px; height: 38px;
-    background: #101627; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--inset2); border: 1px solid var(--line); border-radius: 8px;
     color: var(--dim); font-size: 11px; font-weight: 700; cursor: pointer;
     transition: all .12s;
   }
@@ -159,11 +210,11 @@
 
   .cell {
     flex: 0 0 32px; height: 38px; border-radius: 8px;
-    background: #171e30; border: 1px solid #252f49;
+    background: var(--cell); border: 1px solid var(--cellline);
     cursor: pointer;
     transition: background .1s, box-shadow .1s, border-color .1s;
   }
-  .cell.beat { background: #1c2438; }
+  .cell.beat { background: var(--cellbeat); }
   .cell:hover { border-color: #3d4a70; }
   .cell.gstart { margin-left: 10px; }
   .cell.on {
@@ -175,7 +226,13 @@
     box-shadow: 0 0 14px -1px var(--c), inset 0 0 0 2px rgba(255,255,255,.75);
     filter: brightness(1.15);
   }
-  .cell.now { border-color: #8fa3d9; box-shadow: 0 0 10px -3px rgba(143,163,217,.55); }
+  /* 贝斯滑音：左半透明右半实色，示意从上一个音“滑入” */
+  .cell.on.slide {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--c) 22%, transparent) 0 38%, var(--c) 38%);
+    border-color: var(--c);
+    box-shadow: 0 0 10px -3px var(--c);
+  }
+  .cell.now { border-color: var(--nowline); box-shadow: 0 0 10px -3px rgba(143,163,217,.55); }
   .cell.on.now { filter: brightness(1.15); }
   .row.muted .cell { opacity: .35; }
   @keyframes hit {
@@ -203,16 +260,16 @@
     font-size: 12px; color: var(--dim);
   }
   kbd {
-    background: #1a2135; border: 1px solid #2c3752; border-bottom-width: 2px;
+    background: var(--chip); border: 1px solid var(--chipline); border-bottom-width: 2px;
     border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--text);
     font-family: Consolas, monospace;
   }
   .hire { color: var(--dim); text-decoration: none; transition: color .12s; }
-  .hire:hover { color: #5df0a8; }
+  .hire:hover { color: var(--green); }
   .toast {
     position: fixed; left: 50%; bottom: 34px;
     transform: translateX(-50%) translateY(20px);
-    background: #1a2135; border: 1px solid var(--accent); color: var(--text);
+    background: var(--chip); border: 1px solid var(--accent); color: var(--text);
     font-size: 13px; padding: 9px 18px; border-radius: 999px;
     opacity: 0; pointer-events: none; transition: all .25s;
     box-shadow: 0 10px 30px -10px rgba(0,0,0,.7); z-index: 99;
@@ -226,11 +283,14 @@
     <div class="brand">
       <div class="logo">◉</div>
       <div>
-        <h1>DRUM-909 <span style="color:#5df0a8">V2</span></h1>
+        <h1>DRUM-909 <span style="color:var(--green)">V2</span></h1>
         <p>网页鼓机 + 合成贝斯 · 音色库 / 循环曲 / 工程导出</p>
       </div>
     </div>
-    <span class="badge">4 BANKS · 15 TRACKS · 8/16/32 STEPS</span>
+    <div style="display:flex; align-items:center; gap:10px">
+      <button id="themeBtn" class="chip ghost" title="切换深色 / 浅色主题">🌙</button>
+      <span class="badge">4 BANKS · 15 TRACKS · 8/16/32 STEPS</span>
+    </div>
   </header>
 
   <section class="transport">
@@ -303,7 +363,7 @@
     <span>点格子：开 → <b>重音</b> → 关</span>
     <span><kbd>1</kbd>–<kbd>9</kbd> 试听音色</span>
     <span>每轨右侧滑杆调音量</span>
-    <span>贝斯 6 行 = A 小调五声音阶，逐行点出旋律</span>
+    <span>贝斯 6 行 = A 小调五声音阶，第三击 = <b>滑音</b>（从上一个贝斯音滑入）</span>
     <span>「循环曲」依次播放非空音色库</span>
     <a class="hire" href="hire.html">🛠 网页定制接单</a>
   </footer>
@@ -337,13 +397,14 @@ const TRACKS = [
 const NBANKS = 4, MAX_STEPS = 32, LS_KEY = 'drum909v2';
 const STEP_OPTIONS = [8, 16, 32];
 
-/* 步进值：0 = 关，1 = 常规，2 = 重音。音序内部始终按 MAX_STEPS=32 存，
-   steps 只决定显示与播放的长度，切大步数时保留的内容会回来。 */
+/* 步进值：0 = 关，1 = 常规，2 = 重音；贝斯行的 2 = 滑音（从上一个贝斯音滑入）。
+   音序内部始终按 MAX_STEPS=32 存，steps 只决定显示与播放的长度。 */
 let steps = 16;
 let banks   = Array.from({ length: NBANKS }, () => TRACKS.map(() => Array(MAX_STEPS).fill(0)));
 let muted   = TRACKS.map(() => false);
 let trackVol = TRACKS.map(() => 100);
 let cur = 0, mode = 'p';           // mode: 'p' 单节奏 | 's' 循环曲
+let bassGlideFrom = null;          // 调度中最近一次贝斯音高，供滑音用
 const cellEls = TRACKS.map(() => []);
 const rowEls = [], muteEls = [], tvolEls = [], stepnumEls = [];
 
@@ -500,19 +561,29 @@ const voices = {
     o.connect(g); g.connect(out);
     o.start(t); o.stop(t + 0.4);
   },
-  /* 合成贝斯：锯齿波 + 同频正弦副低频，共鸣低通滤波器做拨弦感 */
-  bass(t, v, out, freq) {
+  /* 合成贝斯：锯齿波 + 同频正弦副低频，共鸣低通滤波器做拨弦感；
+     glideFrom 存在时从该音高滑入（808/303 滑音） */
+  bass(t, v, out, freq, glideFrom) {
     const lp = ctx.createBiquadFilter();
     lp.type = 'lowpass'; lp.Q.value = 5;
-    lp.frequency.setValueAtTime(Math.min(freq * 8, 2500) * (v > 1 ? 1.3 : 1), t);
+    lp.frequency.setValueAtTime(Math.min(freq * 8, 2500), t);
     lp.frequency.exponentialRampToValueAtTime(freq * 1.6, t + 0.22);
     const g = ctx.createGain();
     g.gain.setValueAtTime(0.55 * v, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
     const o = ctx.createOscillator();
-    o.type = 'sawtooth'; o.frequency.value = freq;
+    o.type = 'sawtooth';
     const sub = ctx.createOscillator();
-    sub.type = 'sine'; sub.frequency.value = freq;
+    sub.type = 'sine';
+    if (glideFrom && glideFrom !== freq) {
+      o.frequency.setValueAtTime(glideFrom, t);
+      o.frequency.exponentialRampToValueAtTime(freq, t + 0.16);
+      sub.frequency.setValueAtTime(glideFrom, t);
+      sub.frequency.exponentialRampToValueAtTime(freq, t + 0.16);
+    } else {
+      o.frequency.value = freq;
+      sub.frequency.value = freq;
+    }
     const subg = ctx.createGain(); subg.gain.value = 0.6;
     o.connect(lp);
     sub.connect(subg); subg.connect(lp);
@@ -523,11 +594,11 @@ const voices = {
 };
 
 /* 统一触发入口：闭镲/开镲共用 hat()，靠 open 参数区分 */
-function trigger(tr, t, vel = 1, idx = 0) {
+function trigger(tr, t, vel = 1, idx = 0, glideFrom = null) {
   const out = trackGains ? trackGains[idx] : master;
   if (tr.id === 'chat') voices.hat(t, false, vel, out);
   else if (tr.id === 'ohat') voices.hat(t, true, vel, out);
-  else if (tr.freq) voices.bass(t, vel, out, tr.freq);
+  else if (tr.freq) voices.bass(t, vel, out, tr.freq, glideFrom);
   else voices[tr.id](t, vel, out);
 }
 
@@ -557,7 +628,15 @@ function scheduler() {
     const bk = banks[cur];
     TRACKS.forEach((tr, i) => {
       const v = bk[i][currentStep];
-      if (v && !muted[i]) trigger(tr, t, v === 2 ? 1.35 : 1, i);
+      if (v && !muted[i]) {
+        if (tr.freq) {
+          // 贝斯：2 = 滑音（从上一个贝斯音滑入）；始终记录最近音高
+          trigger(tr, t, 1, i, v === 2 ? bassGlideFrom : null);
+          bassGlideFrom = tr.freq;
+        } else {
+          trigger(tr, t, v === 2 ? 1.35 : 1, i);
+        }
+      }
     });
     nextNoteTime += stepDur();
     const ns = (currentStep + 1) % steps;
@@ -593,6 +672,7 @@ function start() {
   currentStep = 0;
   nextNoteTime = ctx.currentTime + 0.06;
   notesInQueue = [];
+  bassGlideFrom = null;
   playing = true;
   timerID = setInterval(scheduler, LOOKAHEAD);
   playBtn.classList.add('playing');
@@ -680,13 +760,14 @@ board.addEventListener('contextmenu', e => e.preventDefault());
       cell.style.setProperty('--c', tr.color);
       cell.title = (tr.freq ? `${tr.name} ${tr.en}` : tr.name) + ` · 第 ${s + 1} 步`;
       cell.addEventListener('click', () => {
-        const v = (banks[cur][t][s] + 1) % 3;   // 关 → 常规 → 重音 → 关
+        const v = (banks[cur][t][s] + 1) % 3;   // 关 → 常规 → 重音/滑音 → 关
         banks[cur][t][s] = v;
         cell.classList.toggle('on', v > 0);
-        cell.classList.toggle('acc', v === 2);
+        cell.classList.toggle('acc', v === 2 && !tr.freq);
+        cell.classList.toggle('slide', v === 2 && !!tr.freq);
         if (v > 0) {
           ensureAudio();
-          trigger(tr, ctx.currentTime + 0.001, v === 2 ? 1.35 : 1, t);
+          trigger(tr, ctx.currentTime + 0.001, v === 2 && !tr.freq ? 1.35 : 1, t);
           flash(cell);
         }
         updateBankChips();
@@ -705,10 +786,12 @@ function flash(el) {
   el.classList.add('hit');
 }
 function refreshGrid() {
-  TRACKS.forEach((_, t) => {
+  TRACKS.forEach((tr, t) => {
     for (let s = 0; s < MAX_STEPS; s++) {
-      cellEls[t][s].classList.toggle('on', banks[cur][t][s] > 0);
-      cellEls[t][s].classList.toggle('acc', banks[cur][t][s] === 2);
+      const v = banks[cur][t][s];
+      cellEls[t][s].classList.toggle('on', v > 0);
+      cellEls[t][s].classList.toggle('acc', v === 2 && !tr.freq);
+      cellEls[t][s].classList.toggle('slide', v === 2 && !!tr.freq);
     }
   });
 }
@@ -781,8 +864,8 @@ const PRESETS = {
       snare: '0000200000002000',
       chat:  '1010101010101010',
       crash: '2000000000000000',
-      bass0: '1010101010101010',
-      bass3: '0000000000000001',
+      bass0: '1010101010100010',
+      bass3: '0000000000000020',   // A1 → E2 滑音收尾
     }
   },
   house: {
@@ -793,7 +876,8 @@ const PRESETS = {
       ohat:  '0010001000100010',
       rim:   '0000001000000010',
       bass0: '0010001000100010',
-      bass3: '0000001000000010',
+      bass1: '0000001000000010',
+      bass3: '0000000000000002',   // 滑到 E2
     }
   },
   trap: {
@@ -801,7 +885,8 @@ const PRESETS = {
       kick:  '1000001000100000',
       snare: '0000000020000000',
       chat:  '1111111111111111',
-      bass0: '2000001000000010',
+      bass0: '1000001000000000',
+      bass3: '0000000000000020',   // 808 滑音
     }
   },
   brk: {
@@ -824,7 +909,7 @@ const PRESETS = {
       cowbell: '0000000000010000',
       bass0: '1000001000100000',
       bass1: '0010000000000010',
-      bass3: '0000010000000000',
+      bass3: '0000020000000000',   // 滑到 E2
     }
   },
   dnb: {
@@ -835,7 +920,7 @@ const PRESETS = {
       ohat:  '0010000000100010',
       crash: '1000000000000000',
       bass0: '1000000000100000',
-      bass3: '0000001000000010',
+      bass3: '0000001000000020',   // 滑音收尾
     }
   },
 };
@@ -1050,6 +1135,16 @@ document.getElementById('clearBtn').addEventListener('click', clearAll);
 document.getElementById('randomBtn').addEventListener('click', randomize);
 document.getElementById('shareBtn').addEventListener('click', share);
 document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+/* 深色 / 浅色主题（独立于工程存档） */
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(light) {
+  document.body.classList.toggle('light', light);
+  themeBtn.textContent = light ? '☀️' : '🌙';
+  try { localStorage.setItem('drum909theme', light ? 'light' : 'dark'); } catch (e) {}
+}
+themeBtn.addEventListener('click', () => applyTheme(!document.body.classList.contains('light')));
+try { if (localStorage.getItem('drum909theme') === 'light') applyTheme(true); } catch (e) {}
 
 /* TAP 测速：按节奏点几下，取平均间隔 */
 let taps = [];
