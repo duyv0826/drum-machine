@@ -10,7 +10,7 @@
 
 **在线试玩：https://duyv0826.github.io/drum-machine/**
 
-## 🆕 V2 版本（[drum-909-v2.html](drum-909-v2.html) · [在线试玩](https://drum-909-v2-s40u.zai-ai.site)）
+## 🆕 V2 版本（[drum-909-v2.html](drum-909-v2.html) · [在线试玩](https://duyv0826.github.io/drum-machine/drum-909-v2.html)）
 
 在 V1 基础上新增，仍为单文件零依赖：
 
