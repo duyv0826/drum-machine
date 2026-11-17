@@ -341,6 +341,17 @@
       <button class="chip st" data-steps="32" title="32 步">32</button>
     </div>
     <div class="group">
+      <span class="group-label">贝斯音色</span>
+      <button class="chip bsc active" data-bt="saw" title="锯齿波 + 副低频（Acid 感）">锯齿</button>
+      <button class="chip bsc" data-bt="square" title="方波（芯片感）">方波</button>
+      <button class="chip bsc" data-bt="sine" title="纯正弦子低频（808 感）">正弦</button>
+    </div>
+    <div class="group">
+      <span class="group-label">贝斯音阶</span>
+      <button class="chip bsc active" data-scale="penta" title="A 小调五声音阶">五声</button>
+      <button class="chip bsc" data-scale="harm" title="A 和声小调（含大七度特征音 G#）">和声小调</button>
+    </div>
+    <div class="group">
       <span class="group-label">播放模式</span>
       <button class="chip mchip active" data-mode="p" title="只循环当前音色库">单节奏</button>
       <button class="chip mchip" data-mode="s" title="依次循环所有非空音色库 A→B→C→D">循环曲</button>
@@ -351,6 +362,7 @@
       <button class="chip ghost" id="randomBtn">随机 🎲</button>
       <button class="chip ghost" id="exportBtn" title="下载当前全部内容为 JSON 工程文件">导出 💾</button>
       <button class="chip ghost" id="importBtn" title="导入 JSON 工程文件">导入 📂</button>
+      <button class="chip ghost" id="wavBtn" title="把当前音色库渲染成 WAV 音频下载">音频 🎧</button>
       <button class="chip ghost" id="shareBtn" title="复制含当前全部内容的链接">分享 🔗</button>
       <button class="chip ghost" id="resetBtn" title="清空所有音色库并恢复默认">重置</button>
     </div>
@@ -364,6 +376,7 @@
     <span><kbd>1</kbd>–<kbd>9</kbd> 试听音色</span>
     <span>每轨右侧滑杆调音量</span>
     <span>贝斯 6 行 = A 小调五声音阶，第三击 = <b>滑音</b>（从上一个贝斯音滑入）</span>
+    <span>贝斯音色/音阶可切换，「音频 🎧」导出 WAV</span>
     <span>「循环曲」依次播放非空音色库</span>
     <a class="hire" href="hire.html">🛠 网页定制接单</a>
   </footer>
@@ -394,6 +407,27 @@ const TRACKS = [
   { id: 'bass4', name: '贝斯', en: 'G2', color: '#bef264', freq: 98.00 },
   { id: 'bass5', name: '贝斯', en: 'A2', color: '#d9f99d', freq: 110.00 },
 ];
+/* 贝斯音阶：行 = 级数(1-6)，切换音阶只改行映射的音高与行名，pattern 不动 */
+const SCALES = {
+  penta: { name: '五声',     notes: [55.00, 65.41, 73.42, 82.41, 98.00, 110.00], labels: ['A1', 'C2', 'D2', 'E2', 'G2', 'A2'] },
+  harm:  { name: '和声小调', notes: [55.00, 65.41, 73.42, 82.41, 87.31, 103.83], labels: ['A1', 'C2', 'D2', 'E2', 'F2', 'G#2'] },
+};
+let bassScale = 'penta';
+let bassTimbre = 'saw';
+function applyBassScale() {
+  const sc = SCALES[bassScale];
+  TRACKS.slice(-6).forEach((tr, i) => {
+    tr.freq = sc.notes[i];
+    tr.en = sc.labels[i];
+    const t = TRACKS.length - 6 + i;
+    if (cellEls[t] && cellEls[t].length) {
+      for (let s = 0; s < MAX_STEPS; s++)
+        cellEls[t][s].title = `贝斯 ${sc.labels[i]} · 第 ${s + 1} 步`;
+    }
+    const span = document.querySelectorAll('.tlabel span')[t];
+    if (span) span.textContent = sc.labels[i];
+  });
+}
 const NBANKS = 4, MAX_STEPS = 32, LS_KEY = 'drum909v2';
 const STEP_OPTIONS = [8, 16, 32];
 
@@ -561,29 +595,42 @@ const voices = {
     o.connect(g); g.connect(out);
     o.start(t); o.stop(t + 0.4);
   },
-  /* 合成贝斯：锯齿波 + 同频正弦副低频，共鸣低通滤波器做拨弦感；
+  /* 合成贝斯：三种音色（锯齿/方波/正弦），共鸣低通做拨弦感；
      glideFrom 存在时从该音高滑入（808/303 滑音） */
   bass(t, v, out, freq, glideFrom) {
+    const glide = (o, base) => {
+      if (glideFrom && glideFrom !== base) {
+        o.frequency.setValueAtTime(glideFrom, t);
+        o.frequency.exponentialRampToValueAtTime(base, t + 0.16);
+      } else {
+        o.frequency.value = base;
+      }
+    };
+    if (bassTimbre === 'sine') {
+      // 正弦：纯 808 子低频 + 八度三角波点缀，长衰减
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.85 * v, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      const o = ctx.createOscillator(); o.type = 'sine'; glide(o, freq);
+      const o2 = ctx.createOscillator(); o2.type = 'triangle'; glide(o2, freq * 2);
+      const g2 = ctx.createGain(); g2.gain.value = 0.25;
+      o.connect(g); o2.connect(g2); g2.connect(g); g.connect(out);
+      o.start(t); o.stop(t + 0.55);
+      o2.start(t); o2.stop(t + 0.55);
+      return;
+    }
+    const isSq = bassTimbre === 'square';
     const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.Q.value = 5;
+    lp.type = 'lowpass'; lp.Q.value = isSq ? 3 : 5;
     lp.frequency.setValueAtTime(Math.min(freq * 8, 2500), t);
     lp.frequency.exponentialRampToValueAtTime(freq * 1.6, t + 0.22);
     const g = ctx.createGain();
-    g.gain.setValueAtTime(0.55 * v, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+    g.gain.setValueAtTime(0.5 * v, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + (isSq ? 0.3 : 0.38));
     const o = ctx.createOscillator();
-    o.type = 'sawtooth';
+    o.type = isSq ? 'square' : 'sawtooth'; glide(o, freq);
     const sub = ctx.createOscillator();
-    sub.type = 'sine';
-    if (glideFrom && glideFrom !== freq) {
-      o.frequency.setValueAtTime(glideFrom, t);
-      o.frequency.exponentialRampToValueAtTime(freq, t + 0.16);
-      sub.frequency.setValueAtTime(glideFrom, t);
-      sub.frequency.exponentialRampToValueAtTime(freq, t + 0.16);
-    } else {
-      o.frequency.value = freq;
-      sub.frequency.value = freq;
-    }
+    sub.type = 'sine'; glide(sub, freq);
     const subg = ctx.createGain(); subg.gain.value = 0.6;
     o.connect(lp);
     sub.connect(subg); subg.connect(lp);
@@ -991,7 +1038,7 @@ function resetAll() {
 /* ================= 保存 / 载入 / 导出 / 分享 ================= */
 function packState() {
   return {
-    v: 2, b: bpm, s: swing, st: steps, c: cur,
+    v: 2, b: bpm, s: swing, st: steps, c: cur, bt: bassTimbre, bs: bassScale,
     m: muted.map(x => x ? 1 : 0).join(''),
     vo: volSlider.value, tv: trackVol.join(','),
     k: banks.map(bk => bk.map(r => r.join('')).join('|')).join('?'),
@@ -1021,6 +1068,8 @@ function unpackState(o) {
   bpm = Math.min(200, Math.max(60, +o.b || 110));
   swing = Math.min(60, Math.max(0, +o.s || 0));
   steps = STEP_OPTIONS.includes(+o.st) ? +o.st : 16;
+  bassTimbre = ['saw', 'square', 'sine'].includes(o.bt) ? o.bt : 'saw';
+  bassScale = o.bs === 'harm' ? 'harm' : 'penta';
   volSlider.value = Math.min(100, Math.max(0, +o.vo || 80));
   const tv = String(o.tv).split(',').map(Number);
   trackVol = TRACKS.map((_, i) => (tv[i] >= 0 && tv[i] <= 100) ? tv[i] : 100);
@@ -1037,6 +1086,8 @@ function syncUI() {
   });
   applyStepsVisibility();
   syncStepsChips();
+  applyBassScale();
+  syncBassChips();
   refreshGrid();
   updateBankChips();
   syncModeChips();
@@ -1136,6 +1187,25 @@ document.getElementById('randomBtn').addEventListener('click', randomize);
 document.getElementById('shareBtn').addEventListener('click', share);
 document.getElementById('resetBtn').addEventListener('click', resetAll);
 
+/* 贝斯音色 / 音阶切换 */
+const btChips = Array.from(document.querySelectorAll('[data-bt]'));
+const scaleChips = Array.from(document.querySelectorAll('[data-scale]'));
+function syncBassChips() {
+  btChips.forEach(c => c.classList.toggle('active', c.dataset.bt === bassTimbre));
+  scaleChips.forEach(c => c.classList.toggle('active', c.dataset.scale === bassScale));
+}
+btChips.forEach(c => c.addEventListener('click', () => {
+  bassTimbre = c.dataset.bt;
+  syncBassChips();
+  save();
+}));
+scaleChips.forEach(c => c.addEventListener('click', () => {
+  bassScale = c.dataset.scale;
+  applyBassScale();
+  syncBassChips();
+  save();
+}));
+
 /* 深色 / 浅色主题（独立于工程存档） */
 const themeBtn = document.getElementById('themeBtn');
 function applyTheme(light) {
@@ -1188,6 +1258,84 @@ document.addEventListener('click', e => {
 });
 
 /* 初始状态：URL 分享链接 > 本地存档 > 默认预置（须在控件常量声明之后执行） */
+/* 导出当前音色库为 WAV：OfflineAudioContext 离线渲染两轮循环再编码 */
+function audioBufferToWav(buf) {
+  const nCh = buf.numberOfChannels;
+  const len = buf.length * nCh * 2 + 44;
+  const ab = new ArrayBuffer(len);
+  const view = new DataView(ab);
+  const chans = [];
+  for (let c = 0; c < nCh; c++) chans.push(buf.getChannelData(c));
+  const wstr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+  wstr(0, 'RIFF'); view.setUint32(4, len - 8, true); wstr(8, 'WAVE');
+  wstr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+  view.setUint16(22, nCh, true); view.setUint32(24, buf.sampleRate, true);
+  view.setUint32(28, buf.sampleRate * nCh * 2, true); view.setUint16(32, nCh * 2, true);
+  view.setUint16(34, 16, true); wstr(36, 'data'); view.setUint32(40, len - 44, true);
+  let off = 44;
+  for (let i = 0; i < buf.length; i++) {
+    for (let c = 0; c < nCh; c++) {
+      const s = Math.max(-1, Math.min(1, chans[c][i]));
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      off += 2;
+    }
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+}
+async function renderWav() {
+  if (playing) stop();
+  toast('正在渲染 WAV…');
+  const loops = 2, spb = 60 / bpm / 4, sr = 44100;
+  const dur = 0.05 + spb * steps * loops + 1.2;
+  const octx = new OfflineAudioContext(2, Math.ceil(sr * dur), sr);
+  // 临时把音频引擎指到离线环境，渲染完换回
+  const saved = { ctx, master, trackGains, noiseBuf, bgf: bassGlideFrom };
+  ctx = octx; noiseBuf = null; bassGlideFrom = null;
+  master = octx.createGain();
+  master.gain.value = (+volSlider.value / 100) * 0.9;
+  const comp = octx.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.ratio.value = 4;
+  master.connect(comp); comp.connect(octx.destination);
+  trackGains = TRACKS.map((_, i) => {
+    const g = octx.createGain();
+    g.gain.value = trackVol[i] / 100;
+    g.connect(master);
+    return g;
+  });
+  let t0 = 0.05;
+  for (let L = 0; L < loops; L++) {
+    const bk = banks[cur];
+    for (let s = 0; s < steps; s++) {
+      let t = t0 + s * spb;
+      if (s % 2 === 1) t += spb * (swing / 100) * 0.5;
+      TRACKS.forEach((tr, i) => {
+        const v = bk[i][s];
+        if (v && !muted[i]) {
+          if (tr.freq) {
+            trigger(tr, t, 1, i, v === 2 ? bassGlideFrom : null);
+            bassGlideFrom = tr.freq;
+          } else {
+            trigger(tr, t, v === 2 ? 1.35 : 1, i);
+          }
+        }
+      });
+    }
+    t0 += spb * steps;
+  }
+  const rendered = await octx.startRendering();
+  ctx = saved.ctx; master = saved.master; trackGains = saved.trackGains;
+  noiseBuf = saved.noiseBuf; bassGlideFrom = saved.bgf;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(audioBufferToWav(rendered));
+  a.download = 'drum909-loop.wav';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('WAV 已导出 🎧');
+}
+document.getElementById('wavBtn').addEventListener('click', () => {
+  renderWav().catch(() => toast('渲染失败'));
+});
+
 (function load() {
   let st = null;
   if (location.hash.length > 3) {
