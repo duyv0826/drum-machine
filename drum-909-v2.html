@@ -18,6 +18,9 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
+  /* 移动端触控：去点按高亮、禁双击缩放（乐器页面需要即时响应） */
+  * { -webkit-tap-highlight-color: transparent; }
+  button, .cell, input[type="range"] { touch-action: manipulation; }
   body {
     background: radial-gradient(1200px 800px at 50% -10%, #1b2438 0%, var(--bg) 60%);
     color: var(--text);
@@ -99,9 +102,9 @@
   /* ---------- toolbar ---------- */
   .toolbar { display: flex; gap: 12px 22px; flex-wrap: wrap; margin-bottom: 16px; }
   .group { display: flex; align-items: center; gap: 8px; }
-  .group-label { font-size: 11px; color: var(--dim); letter-spacing: 2px; margin-right: 2px; }
+  .group-label { font-size: 11px; color: var(--dim); letter-spacing: 2px; margin-right: 2px; white-space: nowrap; }
   .chip {
-    font-size: 13px; color: var(--text);
+    font-size: 13px; color: var(--text); white-space: nowrap;
     background: #1a2135; border: 1px solid #2c3752; border-radius: 999px;
     padding: 6px 16px; cursor: pointer; transition: all .12s;
   }
@@ -181,6 +184,18 @@
   }
   .cell.hit { animation: hit .16s ease-out; }
 
+  /* ---------- 移动端 ---------- */
+  @media (max-width: 720px) {
+    body { padding: 12px 8px 32px; align-items: stretch; }
+    .machine { padding: 14px 12px 12px; border-radius: 14px; }
+    .transport { flex-wrap: wrap; gap: 12px 14px; padding: 12px 14px; }
+    .play-btn { width: 52px; height: 52px; }
+    .tap { height: 52px; padding: 0 12px; }
+    .param { flex: 1 1 42%; }
+    .badge { display: none; }
+    .hints { gap: 12px; }
+  }
+
   /* ---------- footer / toast ---------- */
   .hints {
     display: flex; gap: 20px; flex-wrap: wrap;
@@ -212,10 +227,10 @@
       <div class="logo">◉</div>
       <div>
         <h1>DRUM-909 <span style="color:#5df0a8">V2</span></h1>
-        <p>网页鼓机音序器 · 音色库 / 循环曲 / 重音 / 工程导出</p>
+        <p>网页鼓机 + 合成贝斯 · 音色库 / 循环曲 / 工程导出</p>
       </div>
     </div>
-    <span class="badge">4 BANKS · 9 TRACKS · 8/16/32 STEPS</span>
+    <span class="badge">4 BANKS · 15 TRACKS · 8/16/32 STEPS</span>
   </header>
 
   <section class="transport">
@@ -288,6 +303,7 @@
     <span>点格子：开 → <b>重音</b> → 关</span>
     <span><kbd>1</kbd>–<kbd>9</kbd> 试听音色</span>
     <span>每轨右侧滑杆调音量</span>
+    <span>贝斯 6 行 = A 小调五声音阶，逐行点出旋律</span>
     <span>「循环曲」依次播放非空音色库</span>
     <a class="hire" href="hire.html">🛠 网页定制接单</a>
   </footer>
@@ -310,6 +326,13 @@ const TRACKS = [
   { id: 'rim',     name: '边击', en: 'RIM',    color: '#9ca3af' },
   { id: 'cowbell', name: '牛铃', en: 'BELL',   color: '#f0abfc' },
   { id: 'tom',     name: '桶鼓', en: 'TOM',    color: '#f472b6' },
+  // 合成贝斯：A 小调五声音阶（A1 起），低→高，每行一个音高
+  { id: 'bass0', name: '贝斯', en: 'A1', color: '#4d7c0f', freq: 55.00 },
+  { id: 'bass1', name: '贝斯', en: 'C2', color: '#65a30d', freq: 65.41 },
+  { id: 'bass2', name: '贝斯', en: 'D2', color: '#84cc16', freq: 73.42 },
+  { id: 'bass3', name: '贝斯', en: 'E2', color: '#a3e635', freq: 82.41 },
+  { id: 'bass4', name: '贝斯', en: 'G2', color: '#bef264', freq: 98.00 },
+  { id: 'bass5', name: '贝斯', en: 'A2', color: '#d9f99d', freq: 110.00 },
 ];
 const NBANKS = 4, MAX_STEPS = 32, LS_KEY = 'drum909v2';
 const STEP_OPTIONS = [8, 16, 32];
@@ -477,6 +500,26 @@ const voices = {
     o.connect(g); g.connect(out);
     o.start(t); o.stop(t + 0.4);
   },
+  /* 合成贝斯：锯齿波 + 同频正弦副低频，共鸣低通滤波器做拨弦感 */
+  bass(t, v, out, freq) {
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.Q.value = 5;
+    lp.frequency.setValueAtTime(Math.min(freq * 8, 2500) * (v > 1 ? 1.3 : 1), t);
+    lp.frequency.exponentialRampToValueAtTime(freq * 1.6, t + 0.22);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.55 * v, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth'; o.frequency.value = freq;
+    const sub = ctx.createOscillator();
+    sub.type = 'sine'; sub.frequency.value = freq;
+    const subg = ctx.createGain(); subg.gain.value = 0.6;
+    o.connect(lp);
+    sub.connect(subg); subg.connect(lp);
+    lp.connect(g); g.connect(out);
+    o.start(t); o.stop(t + 0.42);
+    sub.start(t); sub.stop(t + 0.42);
+  },
 };
 
 /* 统一触发入口：闭镲/开镲共用 hat()，靠 open 参数区分 */
@@ -484,6 +527,7 @@ function trigger(tr, t, vel = 1, idx = 0) {
   const out = trackGains ? trackGains[idx] : master;
   if (tr.id === 'chat') voices.hat(t, false, vel, out);
   else if (tr.id === 'ohat') voices.hat(t, true, vel, out);
+  else if (tr.freq) voices.bass(t, vel, out, tr.freq);
   else voices[tr.id](t, vel, out);
 }
 
@@ -569,6 +613,8 @@ function togglePlay() { playing ? stop() : start(); }
 
 /* ================= 构建网格 UI ================= */
 const board = document.getElementById('board');
+/* 移动端长按编辑时不弹系统菜单 */
+board.addEventListener('contextmenu', e => e.preventDefault());
 (function buildBoard() {
   const head = document.createElement('div');
   head.className = 'row';
@@ -632,7 +678,7 @@ const board = document.getElementById('board');
       const cell = document.createElement('div');
       cell.className = 'cell' + (s % 4 === 0 ? ' beat' : '') + (s % 4 === 0 && s > 0 ? ' gstart' : '');
       cell.style.setProperty('--c', tr.color);
-      cell.title = `${tr.name} · 第 ${s + 1} 步`;
+      cell.title = (tr.freq ? `${tr.name} ${tr.en}` : tr.name) + ` · 第 ${s + 1} 步`;
       cell.addEventListener('click', () => {
         const v = (banks[cur][t][s] + 1) % 3;   // 关 → 常规 → 重音 → 关
         banks[cur][t][s] = v;
@@ -735,6 +781,8 @@ const PRESETS = {
       snare: '0000200000002000',
       chat:  '1010101010101010',
       crash: '2000000000000000',
+      bass0: '1010101010101010',
+      bass3: '0000000000000001',
     }
   },
   house: {
@@ -744,6 +792,8 @@ const PRESETS = {
       chat:  '1000100010001000',
       ohat:  '0010001000100010',
       rim:   '0000001000000010',
+      bass0: '0010001000100010',
+      bass3: '0000001000000010',
     }
   },
   trap: {
@@ -751,6 +801,7 @@ const PRESETS = {
       kick:  '1000001000100000',
       snare: '0000000020000000',
       chat:  '1111111111111111',
+      bass0: '2000001000000010',
     }
   },
   brk: {
@@ -760,6 +811,8 @@ const PRESETS = {
       chat:  '1010101010101010',
       crash: '2000000000000000',
       tom:   '0000000000000001',
+      bass0: '1000100000100000',
+      bass2: '0000000010000000',
     }
   },
   funk: {
@@ -769,6 +822,9 @@ const PRESETS = {
       chat:  '1011101110111011',
       ohat:  '0000000000100000',
       cowbell: '0000000000010000',
+      bass0: '1000001000100000',
+      bass1: '0010000000000010',
+      bass3: '0000010000000000',
     }
   },
   dnb: {
@@ -778,6 +834,8 @@ const PRESETS = {
       chat:  '1010101010101010',
       ohat:  '0010000000100010',
       crash: '1000000000000000',
+      bass0: '1000000000100000',
+      bass3: '0000001000000010',
     }
   },
 };
@@ -803,7 +861,8 @@ function applyPreset(p) {
 
 /* ================= 随机 / 清空 ================= */
 function randomize() {
-  const prob = { kick: 0.28, snare: 0.10, clap: 0.10, chat: 0.5, ohat: 0.08, crash: 0.01, rim: 0.08, cowbell: 0.06, tom: 0.06 };
+  const prob = { kick: 0.28, snare: 0.10, clap: 0.10, chat: 0.5, ohat: 0.08, crash: 0.01, rim: 0.08, cowbell: 0.06, tom: 0.06,
+                 bass0: 0.18, bass1: 0.08, bass2: 0.08, bass3: 0.08, bass4: 0.06, bass5: 0.05 };
   const bk = banks[cur];
   TRACKS.forEach((tr, i) => {
     for (let s = 0; s < steps; s++) {
